@@ -24,9 +24,7 @@ resource "azurerm_virtual_network" "vn1" {
   name                = var.virtual_network_name
   location            = var.resource_group_location
   resource_group_name = var.resource_group_name
-  address_space       = ["10.0.0.0/16"]
-  dns_servers         = ["10.0.0.4", "10.0.0.5"]
-
+  address_space       = var.vnet_address_space
   tags = {
     environment = var.tags
   }
@@ -37,9 +35,34 @@ resource "azurerm_subnet" "subnet1" {
   depends_on = [
     azurerm_virtual_network.vn1
   ]
-  name                 = var.subnet_name
+  for_each             = var.subnets
+  name                 = each.value["name"]
   resource_group_name  = var.resource_group_name
   virtual_network_name = var.virtual_network_name
-  address_prefixes     = ["10.0.1.0/24"]
+  address_prefixes     = each.value["address_prefixes"]
 
+}
+
+resource "azurerm_public_ip" "publicIP" {
+  name                = var.public_ip_name
+  resource_group_name = var.resource_group_name
+  location            = var.resource_group_location
+  allocation_method   = "Static"
+  sku                 = "Standard"
+
+  tags = {
+    environment = var.tags
+  }
+}
+
+resource "azurerm_bastion_host" "bastion_host" {
+  name                = var.bastionhost_name
+  location            = var.resource_group_location
+  resource_group_name = var.resource_group_name
+
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = azurerm_subnet.subnet1["bastion_subet"].id
+    public_ip_address_id = azurerm_public_ip.publicIP.id
+  }
 }
