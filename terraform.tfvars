@@ -1,0 +1,6 @@
+resource_group_name         = "rg-network"
+resource_group_location     = "east us"
+virtual_network_name        = "vnet-eastus"
+tags                        = "devv"
+network_secuirty_group_name = "nsg-vnet-eastus"
+subnet_name                 = "subnet-vnet-eastus"
